@@ -1,8 +1,4 @@
-Okay, I will update the `README.md` to reflect the refined project structure, the detailed steps for each task, including the `ml_pipeline` part, the `.env` file usage, and the precise commands we've established.
 
-Here's the updated `README.md` content:
-
-````markdown
 # Ethiopian Medical DataWarehouse using YoloV5
 
 A comprehensive data warehouse solution for Ethiopian medical business data scraped from Telegram channels, including data scraping, object detection with YOLOv5, and ETL/ELT processes using dbt, integrated with a FastAPI application for data exposure.
@@ -216,4 +212,3 @@ We welcome contributions to improve the project. Please follow the steps below t
 - Fork the repository.
 - Create a new branch for your feature or bugfix.
 - Submit a pull request with a detailed explanation of your changes.
-````
