@@ -1,0 +1,124 @@
+version: 2
+
+sources:
+  - name: medical_data
+    schema: public
+    description: "Source data for Ethiopian medical businesses scraped from Telegram channels."
+    tables:
+      - name: ethio_medical
+        description: "Raw Telegram data containing channel and message information for Ethiopian medical businesses."
+        # You would typically add columns and tests for your raw source tables here as well
+        # columns:
+        #   - name: id
+        #     description: "Unique identifier for the raw message/entry."
+        #     tests:
+        #       - unique
+        #       - not_null
+        #   - name: message # As per previous error, ensure this matches case in raw data
+        #     description: "The full text content of the Telegram message."
+        #   - name: date # Example raw column
+        #   - name: chat_id # Example raw column
+        #   # ... (other raw columns)
+
+models:
+  # Moved transformed_medical_product under models, assuming it's a dbt model
+  - name: transformed_medical_product
+    description: "Table containing transformed medical product data based on the raw source. This might be an intermediate model."
+    # Ensure the columns here match what this model actually outputs
+    columns:
+      - name: product_id
+        description: "Unique identifier for the medical product after initial transformation."
+        tests:
+          - not_null
+          - unique
+      - name: message # This must match the lowercase 'message' from your source and transformed_medical_product.sql
+        description: "The cleaned or extracted message content related to the product."
+        tests:
+          - not_null
+      # Add other columns from this model as needed, e.g.:
+      # - name: extracted_price
+      # - name: extracted_category
+
+
+  - name: transformed_channel
+    description: "Table containing transformed channel information."
+    columns:
+      - name: channel_id # Often, you'd have a channel_id as primary key here
+        description: "The unique ID for the channel."
+        tests:
+          - not_null
+          - unique
+      - name: channel_username
+        description: "The username of the channel."
+        tests:
+          - not_null
+          - unique
+      - name: channel_title
+        description: "The title of the channel."
+        tests:
+          - not_null
+
+  - name: transformed_contact_number
+    description: "Table containing transformed contact numbers."
+    columns:
+      - name: channel_id
+        description: "The ID of the channel linked to the contact number."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('transformed_channel') # Reference the channel_id in transformed_channel
+              field: channel_id # The field in transformed_channel that channel_id refers to
+      - name: contact_phone_numbers # FIX: Changed to plural 'contact_phone_numbers'
+        description: "Phone numbers associated with the channel."
+        tests:
+          - not_null
+      # Consider adding a unique test on the combination of channel_id and contact_phone_numbers
+      # - unique_combination_of_channel_id_contact_phone_numbers:
+      #     - channel_id
+      #     - contact_phone_numbers
+
+  - name: transformed_product # Corrected spelling!
+    description: "Table containing transformed medical products data."
+    columns:
+      - name: product_id
+        description: "ID of the medical product. This should be unique."
+        tests:
+          - not_null
+          - unique # Added unique test, as product_id should typically be unique
+      - name: price_in_birr
+        description: "Price of the product in Birr."
+        tests:
+          - not_null
+          - accepted_range:
+              min_value: 0 # FIX: Corrected syntax to min_value
+              # max_value: 1000000 # Consider adding a max_value if appropriate for your data range
+      - name: channel_id
+        description: "ID of the channel that listed the product."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('transformed_channel')
+              field: channel_id # The field in transformed_channel that channel_id refers to
+      - name: date
+        description: "The date when the product information was listed."
+        tests:
+          - not_null
+      # FIX: Removed 'message_id' column definition as 'product_id' is now used for this purpose
+
+
+  - name: transformed_product_images
+    description: "Table containing transformed product image paths."
+    columns:
+      - name: product_id # FIX: Changed from 'message_id' to 'product_id'
+        description: "The product ID associated with the product image."
+        tests:
+          - not_null
+          # Unique constraint depends on whether one product_id can have multiple image entries (e.g., image_path is part of the key)
+          # - unique # Consider if product_id alone is unique here, or if image_path is part of the unique key
+          - relationships:
+              to: ref('transformed_medical_product')
+              field: product_id # FIX: Changed from 'message_id' to 'product_id'
+      - name: image_path
+        description: "Path to the product image."
+        tests:
+          - not_null

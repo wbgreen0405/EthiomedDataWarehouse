@@ -1,0 +1,46 @@
+# Core Python libraries
+pytest
+pandas
+scipy
+numpy
+matplotlib
+seaborn
+emoji
+telethon
+
+# For FastAPI application
+fastapi
+uvicorn
+python-dotenv       # For loading environment variables from .env
+sqlalchemy          # For database ORM (used in app/database.py)
+psycopg2-binary     # PostgreSQL adapter for SQLAlchemy (crucial for your DB connection)
+Jinja2              # For templating (used in app/main.py)
+python-multipart    # For handling form data in FastAPI
+# If you use pydantic's v2 features, you might need:
+# pydantic>=2.0.0
+# pydantic-settings # If you move settings to Pydantic-settings
+
+# For YOLOv5 (minimal requirements for running train/detect scripts)
+# These are the ones usually installed directly by YOLOv5's own requirements.txt,
+# but it's good to list core ones your project directly relies on if you aren't
+# running 'pip install -r yolov5/requirements.txt' as a separate step.
+# Note: train_model.py already attempts to install yolov5/requirements.txt
+torch
+torchvision
+ultralytics # YOLOv5 is from Ultralytics
+pillow      # For image processing in various libraries
+psutil      # For system info, often a YOLOv5 dependency
+PyYAML      # For YAML parsing, used by YOLOv5 and its configs
+requests    # For HTTP requests, used by Roboflow and others
+tqdm        # For progress bars
+
+# For Roboflow dataset download and inference
+roboflow
+inference-sdk # For Roboflow InferenceHTTPClient
+
+# For MediaPipe (if used in FastAPI for face ROI extraction)
+mediapipe
+opencv-python # Used by MediaPipe and general image processing
+
+# For asynchronous operations (if nest_asyncio is still explicitly used)
+nest-asyncio
