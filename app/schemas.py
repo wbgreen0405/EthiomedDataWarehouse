@@ -52,7 +52,15 @@ class ProductResponse(BaseModel):
     class Config:
         from_attributes = True
 
+# --- NEW: Schema for Search Results ---
+class SearchResponse(BaseModel):
+    message: str
+    products: List[ProductBase]
 
+    class Config:
+        from_attributes = True # Important for nested ORM objects
+
+        
 # --- Other Schemas (as per your previous schemas.py, with orm_mode fix) ---
 # Note: The 'Product' class you had that just inherited from ProductBase
 # is now essentially replaced by ProductBase itself if it's the final output model.

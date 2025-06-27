@@ -1,18 +1,19 @@
 # app/main.py (relevant section)
 
+# app/main.py (relevant section)
+
 from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session # Keep for now if old sync dependencies exist, but ideally use AsyncSession
-from sqlalchemy.ext.asyncio import AsyncSession # Import AsyncSession for async db operations
+from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel
 from typing import List, Optional
 
-# Corrected imports (assuming database.py, crud.py, schemas.py are in the 'app' directory)
-from .database import get_db, check_db_connection # Import check_db_connection
+from .database import get_db, check_db_connection
 from .crud import get_product_by_name
-from .schemas import ProductBase, ProductResponse
+from .schemas import ProductBase, ProductResponse, SearchResponse # FIX: Import SearchResponse
 
 app = FastAPI(title="Integrated V-BPE Inference API")
 
@@ -72,28 +73,24 @@ def explore_data():
     return {"message": "Data exploration placeholder"}
 
 # Endpoint for "Search by Product"
-@app.get("/search-product/", response_model=List[ProductBase]) # response_model expects List[ProductBase]
+# FIX: Changed response_model to SearchResponse
+@app.get("/search-product/", response_model=SearchResponse)
 async def search_product(product_name: str, db: AsyncSession = Depends(get_db)):
-    print(f"Search requested for: {product_name}")  # Debug log
+    print(f"Search requested for: {product_name}")
     try:
-        # Retrieve products by name, eagerly loading relationships
         products = await get_product_by_name(db=db, product_name=product_name)
 
-        # FIX: Directly return the list of ORM objects.
-        # FastAPI/Pydantic will automatically handle the conversion
-        # to the response_model (List[ProductBase]) due to from_attributes=True
         if products:
-            # The 'products' list returned from CRUD already contains ORM objects
-            # that have 'date', 'channel' and 'images' relationships loaded (due to selectinload).
-            # FastAPI's response_model will handle the conversion, including nested Pydantic models.
-            print(f"Products found (ORM objects): {products}") # Log ORM objects (for debugging)
-            return products # Return the list of ORM objects directly
+            print(f"Products found (ORM objects): {products}")
+            # FIX: Return SearchResponse with message and products
+            return SearchResponse(message=f"{len(products)} results found.", products=products)
         else:
-            raise HTTPException(status_code=404, detail="Product not found")
+            print(f"No products found for search term: {product_name}")
+            # FIX: Return SearchResponse with "no results" message and empty list
+            return SearchResponse(message="No results found in database for your search.", products=[])
 
     except Exception as e:
-        print(f"Error: {e}")  # Log the exception
-        # For production, consider a less verbose error message:
+        print(f"Error: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error: " + str(e))
 
 
